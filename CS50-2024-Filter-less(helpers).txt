@@ -1,0 +1,127 @@
+#include "helpers.h"
+#include <math.h>
+
+// Convert image to grayscale
+void grayscale(int height, int width, RGBTRIPLE image[height][width])
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int sum = image[i][j].rgbtBlue + image[i][j].rgbtGreen + image[i][j].rgbtRed;
+            int avg = image[i][j].rgbtBlue = round(sum / 3.0);
+
+            image[i][j].rgbtBlue = avg;
+            image[i][j].rgbtGreen = avg;
+            image[i][j].rgbtRed = avg;
+        }
+    }
+    return;
+}
+
+// Convert image to sepia
+void sepia(int height, int width, RGBTRIPLE image[height][width])
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int originalBlue = image[i][j].rgbtBlue;
+            int originalGreen = image[i][j].rgbtGreen;
+            int originalRed = image[i][j].rgbtRed;
+
+            int sepiaRed = round(.393 * originalRed + .769 * originalGreen + .189 * originalBlue);
+            int sepiaGreen = round(.349 * originalRed + .686 * originalGreen + .168 * originalBlue);
+            int sepiaBlue = round(.272 * originalRed + .534 * originalGreen + .131 * originalBlue);
+
+            if (sepiaRed >= 225)
+            {
+                sepiaRed = 225;
+            }
+            if (sepiaGreen >= 225)
+            {
+                sepiaGreen = 225;
+            }
+            if (sepiaBlue >= 225)
+            {
+                sepiaBlue = 225;
+            }
+
+            image[i][j].rgbtBlue = sepiaBlue;
+            image[i][j].rgbtGreen = sepiaGreen;
+            image[i][j].rgbtRed = sepiaRed;
+        }
+    }
+
+    return;
+}
+
+// Reflect image horizontally
+void reflect(int height, int width, RGBTRIPLE image[height][width])
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0, temp; j < width / 2; j++)
+        {
+            temp = image[i][j].rgbtBlue;
+            image[i][j].rgbtBlue = image[i][width - 1 - j].rgbtBlue;
+            image[i][width - 1 - j].rgbtBlue = temp;
+
+            temp = image[i][j].rgbtGreen;
+            image[i][j].rgbtGreen = image[i][width - 1 - j].rgbtGreen;
+            image[i][width - 1 - j].rgbtGreen = temp;
+
+            temp = image[i][j].rgbtRed;
+            image[i][j].rgbtRed = image[i][width - 1 - j].rgbtRed;
+            image[i][width - 1 - j].rgbtRed = temp;
+        }
+    }
+    return;
+}
+
+// Blur image
+void blur(int height, int width, RGBTRIPLE image[height][width])
+{
+    RGBTRIPLE copy[height][width];
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            copy[i][j].rgbtBlue = image[i][j].rgbtBlue;
+            copy[i][j].rgbtGreen = image[i][j].rgbtGreen;
+            copy[i][j].rgbtRed = image[i][j].rgbtRed;
+        }
+    }
+
+    for (int x = 0; x < height; x++)
+    {
+        for (int y = 0; y < width; y++)
+        {
+            int blueSum = 0, greenSum = 0, redSum = 0, c = 0;
+            int r = 1;
+
+            for (int row = x - r; row <= x + r; row++)
+            {
+                for (int column = y - r; column <= y + r; column++)
+                {
+                    if ((row >= 0 && column >= 0) && (row <= height - 1 && column <= width - 1))
+                    {
+                        blueSum += copy[row][column].rgbtBlue;
+                        greenSum += copy[row][column].rgbtGreen;
+                        redSum += copy[row][column].rgbtRed;
+                        c++;
+                    }
+                }
+            }
+
+            int avgBlue = round(blueSum * 1.0 / c);
+            int avgGreen = round(greenSum * 1.0 / c);
+            int avgRed = round(redSum * 1.0 / c);
+
+            image[x][y].rgbtBlue = avgBlue;
+            image[x][y].rgbtGreen = avgGreen;
+            image[x][y].rgbtRed = avgRed;
+        }
+    }
+    return;
+}
